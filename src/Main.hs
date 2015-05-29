@@ -5,32 +5,25 @@ import           Control.Monad.State
 
 -- Haskell Stack DataStructure
 
-type Stack a = [a]
+type Stack = [Int]
 
-create :: Stack a
-create = []
+pop :: State Stack Int
+pop = state $ \(x:xs) -> (x,xs)
 
-push :: a -> Stack a -> Stack a
-push = (:)
+push :: Int -> State Stack ()
+push y = state $ \xs -> ((), y:xs)
 
-pop :: Stack a -> Stack a
-pop []     = []
-pop (x:xs) = xs
+peek' [] = Nothing
+peek' (x:xs) = Just x
 
-peek :: Stack a -> Maybe a
-peek []     = Nothing
-peek (x:xs) = Just x
+binOp op = do
+    x <- pop
+    y <- pop
+    push $ x `op` y
 
-runBinaryOp stack op =
-  let a = pop stack
-      b = pop stack in
-  push (a `op` b)
+plusOp = binOp (+)
+minusOp = binOp (-)
 
-data AST =
-    Command String
-  | Atom String
-  deriving ( Show, Eq )
+example = (push 10) >> (push 20) >> (push 30) >> pop
 
-data VirtualMachine = VirtualMachine {
-  initialStack :: Stack AST
-}
+x = runState example []
