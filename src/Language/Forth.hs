@@ -1,20 +1,39 @@
 module Language.Forth () where
 
 import           Control.Monad.State
-import           Data.Map
+import           Data.Map            (Map)
+import qualified Data.Map            as M
 import           Language.AST
 
 type Stack = [Int]
 
-pop :: State Stack Int
-pop = state $ \(x:xs) -> (x,xs)
+popS :: State Stack Int
+popS = state $ \(x:xs) -> (x,xs)
 
-push :: Int -> State Stack ()
-push y = state $ \xs -> ((), y:xs)
+pushS :: Int -> State Stack ()
+pushS y = state $ \xs -> ((), y:xs)
 
-example = (push 10) >> (push 20) >> (push 30) >> pop
+example = (pushS 10) >> (pushS 20) >> (pushS 30) >> popS
+
+----
+
+type ForthStack = [Int]
+
+type Dict = Map String String
 
 data Interpreter = Interpreter {
-    stack :: [AST]
-  , words :: Map String String
-} deriving Show
+    stack    :: ForthStack
+  , wordList :: Dict
+} deriving ( Show )
+
+defaultInterpreter :: Interpreter
+defaultInterpreter = Interpreter [] M.empty
+
+addWord :: Interpreter -> String -> String -> Interpreter
+addWord (Interpreter stack wordList) name value =
+  Interpreter stack (M.insert name value wordList)
+
+doCommand (Interpreter stack wordList) (Word "DUP") =
+    case stack of
+      []     -> error "Stack underflow"
+      (x:xs) -> Interpreter (x:x:xs) wordList
