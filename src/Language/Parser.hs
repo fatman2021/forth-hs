@@ -23,6 +23,10 @@ word = do
   wrd <- many1 (letter <|> oneOf specialSymbols)
   return $ Word wrd
 
+-- Forth words
+--
+-- : inc (x -- x) 1 + ;
+--
 newWord :: Parser AST
 newWord = do
     char ':'

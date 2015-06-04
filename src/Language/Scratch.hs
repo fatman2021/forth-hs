@@ -37,6 +37,14 @@ parseProgram = (map asCommand) . words
         asCommand "SWAP" = Swap
         asCommand x      = Push (read x)
 
+push n stack = n : stack
+
+add :: (MonadState b m, Num b) => t -> m b
+add stack = do
+  x <- get
+  y <- get
+  return $ x + y
+
 runProgram :: Program -> Stack -> Stack
 runProgram [] stack = stack
 runProgram (x:xs) stack = runProgram xs (runCommand x stack)

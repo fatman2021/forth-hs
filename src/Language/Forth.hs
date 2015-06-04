@@ -15,6 +15,14 @@ pushS y = state $ \xs -> ((), y:xs)
 
 example = (pushS 10) >> (pushS 20) >> (pushS 30) >> popS
 
+binaryOperation :: MonadState t m => (t -> t -> t) -> m ()
+binaryOperation op = do
+    x <- get
+    y <- get
+    put (x `op` y)
+
+defaultStack = []
+
 ----
 
 type ForthStack = [Int]
