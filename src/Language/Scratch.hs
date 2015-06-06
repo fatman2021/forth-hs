@@ -2,6 +2,9 @@ module Language.Scratch where
 
 import           Control.Monad.State
 import qualified Data.Map            as M
+import Data.List
+import qualified Language.Learn as Learn
+import Control.Exception
 
 data Command =
     Push Int
@@ -22,10 +25,27 @@ popS = state $ \(x:xs) -> (x,xs)
 pushS :: Int -> State Stack ()
 pushS y = state $ \xs -> ((), y:xs)
 
-binaryOperation op = do
-    x <- get
-    y <- get
-    put (x `op` y)
+dup :: State Stack ()
+dup = do
+    modify dup'
+    return ()
+    where
+      dup' []     = fail "Empty stack"
+      dup' (x:xs) = (x:x:xs)
+
+binaryOp :: (Int -> Int -> Int) -> State Stack ()
+binaryOp op = do
+    modify (binOp' op)
+    return ()
+      where
+        binOp' op (x:y:xs) = let z = x `op` y in z : xs
+        binOp' op _        = error "Invalid function arity"
+
+pop2 :: State [Int] (Maybe Int)
+pop2 = do
+    (x:xs) <- get
+    put xs
+    return $ Just x
 
 parseProgram :: String -> [Command]
 parseProgram = (map asCommand) . words
@@ -45,26 +65,19 @@ add stack = do
   y <- get
   return $ x + y
 
-runProgram :: Program -> Stack -> Stack
+runCommand :: Command -> Stack -> Either String Stack
+runCommand (Push n) stack = Right $ n : stack
+runCommand Dup (x:xs)     = Right $ x : x : xs
+runCommand Add (x:y:xs)   = Right $ x+y : xs
+runCommand Mult (x:y:xs)  = Right $ (x*y) : xs
+runCommand Swap (x:y:xs)  = Right $ y : x : xs
+runCommand _ _ = Left "empty stack"
+
+runProgram :: Program -> Either String Stack -> Either String Stack
 runProgram [] stack = stack
 runProgram (x:xs) stack = runProgram xs (runCommand x stack)
+    where commandResult = runCommand x stack
 
-runCommand :: Command -> Stack -> Stack
-runCommand (Push n) stack = n : stack
-runCommand Dup (x:xs)     = x:x:xs
-runCommand Add (x:y:xs)   = x+y:xs
-runCommand _ _ = error "empty stack"
-
-execute :: String -> Stack -> Stack
+execute :: String -> Stack -> Either String Stack
 execute program stack = runProgram parsed stack
   where parsed = parseProgram program
-
-loop :: Stack -> IO String
-loop stack = do
-    putStrLn "Welcome to FORTH"
-    putStrLn ">>>"
-    putStrLn (show stack)
-    code   <- getLine
-    let result = execute code stack
-    putStrLn . show $ result
-    loop result
