@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Language.Forth
+module Language.Parser
   ( exprs
   , parseAST
   ) where
@@ -13,7 +13,7 @@ import           Text.Parsec.String
 number :: Parser AST
 number = do
   n <- many1 digit
-  return $ Number (read n)
+  return $ Integer (read n)
 
 specialSymbols :: [Char]
 specialSymbols = "+-*/.!"
@@ -42,13 +42,16 @@ newWord = do
     return $ (Def name body)
 
 expr :: Parser AST
-expr = newWord <|> number <|> word <|> list
+expr = newWord
+   <|> number
+   <|> word
+   <|> list
 
 exprs :: Parser [AST]
 exprs = expr `sepBy1` spaces
 
 tryParser p input = case (parse (p `sepBy1` spaces) ">>" input) of
-    Left e  -> error (show e)
+    Left  e -> error (show e)
     Right v -> v
 
 parseAST :: String -> [AST]

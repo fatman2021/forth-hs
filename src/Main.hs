@@ -2,4 +2,8 @@ module Main where
 
 import           Language.Forth
 
-main = putStrLn "Running program"
+runProgram program = do
+    contents <- readFile program
+    return contents
+
+main = putStrLn "Forth"

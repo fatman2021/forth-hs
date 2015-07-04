@@ -1,10 +1,25 @@
-module Language.AST
-  (AST(..)) where
+module Language.AST where
 
+-- Abstract Parse Tree
+--
 data AST =
     Def String String
   | Word String
-  | Number Int
+  | Integer Int
   | Push AST
   | List [AST]
-  deriving ( Show, Eq, Ord )
+  deriving ( Show )
+
+data Command =
+    Add
+  | Mult
+  | Dup
+  | Swap
+  deriving ( Show )
+
+data Prim =
+    FInt    Int
+  | FStr    String
+  | FList   [Prim]
+  | FNative Command
+  deriving ( Show )

@@ -1,47 +1,55 @@
-module Language.Forth () where
+module Language.Forth where
 
 import           Control.Monad.State
-import           Data.Map            (Map)
 import qualified Data.Map            as M
 import           Language.AST
+import qualified Language.Parser     as P
 
-type Stack = [Int]
-
-popS :: State Stack Int
-popS = state $ \(x:xs) -> (x,xs)
-
-pushS :: Int -> State Stack ()
-pushS y = state $ \xs -> ((), y:xs)
-
-example = (pushS 10) >> (pushS 20) >> (pushS 30) >> popS
-
-binaryOperation :: MonadState t m => (t -> t -> t) -> m ()
-binaryOperation op = do
-    x <- get
-    y <- get
-    put (x `op` y)
-
-defaultStack = []
-
-----
-
-type ForthStack = [Int]
-
-type Dict = Map String String
+type Dict = M.Map String String
 
 data Interpreter = Interpreter {
-    stack    :: ForthStack
+    stack    :: [Prim]
   , wordList :: Dict
 } deriving ( Show )
 
-defaultInterpreter :: Interpreter
-defaultInterpreter = Interpreter [] M.empty
+push :: a -> [a] -> [a]
+push x stack = x : stack
 
-addWord :: Interpreter -> String -> String -> Interpreter
-addWord (Interpreter stack wordList) name value =
-  Interpreter stack (M.insert name value wordList)
+pop (x:xs) = (x, xs)
+pop []     = error "stack underflow"
 
-doCommand (Interpreter stack wordList) (Word "DUP") =
-    case stack of
-      []     -> error "Stack underflow"
-      (x:xs) -> Interpreter (x:x:xs) wordList
+type Stack = [Prim]
+
+-- Functions
+
+add :: Stack -> Stack
+add ((FInt a):(FInt b):xs) =
+  let result = FInt $ a + b in push result xs
+add _ = error "Bad form"
+
+-- TODO error here is around pushing ordering onto the stack!
+dup :: Stack -> Stack
+dup (x:xs) = (x:x:xs)
+dup [] = []
+
+--
+eval :: AST -> Prim
+eval (Word "+") = FNative Add
+eval (Word "*") = FNative Mult
+eval (Word "SWAP") = FNative Swap
+eval (Word "DUP") = FNative Dup
+eval (Integer x) = FInt x
+eval (Word x) = FStr x
+eval _ = error "Bad form"
+
+-- Execution
+
+run :: String -> [Prim]
+run input = let ast = map eval $ P.parseAST input in foldl (flip push) [] ast
+
+execute [] = []
+execute stack@(x:xs) =
+  case x of
+    (FNative Add) -> execute $ add xs
+    (FNative Dup) -> execute xs
+    _             -> stack

@@ -3,25 +3,11 @@ module Language.Scratch where
 import           Control.Monad.State
 import qualified Data.Map            as M
 import Data.List
-import qualified Language.Learn as Learn
 import Control.Exception
-
--- | Base language forms (int string list and function)
-data Prim =
-    FInt    Int
-  | FStr    String
-  | FList   [Prim]
-  | FNative Command
-
-data Command =
-    Add
-  | Mult
-  | Dup
-  | Swap
-  | Dot
-  deriving ( Show )
+import Language.AST
 
 type Program = [Command]
+
 type Stack   = [Int]
 
 popS :: State Stack Int
