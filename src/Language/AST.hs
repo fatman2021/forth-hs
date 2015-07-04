@@ -6,4 +6,5 @@ data AST =
   | Word String
   | Number Int
   | Push AST
+  | List [AST]
   deriving ( Show, Eq, Ord )

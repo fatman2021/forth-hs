@@ -16,12 +16,17 @@ number = do
   return $ Number (read n)
 
 specialSymbols :: [Char]
-specialSymbols = "+-*/."
+specialSymbols = "+-*/.!"
 
 word :: Parser AST
-word = do
-  wrd <- many1 (letter <|> oneOf specialSymbols)
-  return $ Word wrd
+word = many1 (letter <|> oneOf specialSymbols) >>= (\w -> return $ Word w)
+
+-- | Experimental list form
+list :: Parser AST
+list = do
+    char '['
+    innerForms <- manyTill exprs (char ']')
+    return $ List (foldr (++) [] innerForms)
 
 -- Forth words
 --
@@ -37,10 +42,14 @@ newWord = do
     return $ (Def name body)
 
 expr :: Parser AST
-expr = newWord <|> number <|> word
+expr = newWord <|> number <|> word <|> list
 
 exprs :: Parser [AST]
 exprs = expr `sepBy1` spaces
+
+tryParser p input = case (parse (p `sepBy1` spaces) ">>" input) of
+    Left e  -> error (show e)
+    Right v -> v
 
 parseAST :: String -> [AST]
 parseAST input = case (parse exprs "FORTH" input) of
