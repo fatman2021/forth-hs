@@ -1,6 +1,6 @@
 # Forth
 
-An interpreter for a bespoke dialect of Forth that have built in list primatives.
+An interpreter for a bespoke dialect of Forth that has built in list primatives.
 
 ```haskell 
 
