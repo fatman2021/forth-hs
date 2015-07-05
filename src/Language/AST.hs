@@ -22,4 +22,9 @@ data Prim =
   | FStr    String
   | FList   [Prim]
   | FNative Command
-  deriving ( Show )
+
+instance Show Prim where
+    show (FInt x)   = (show x)
+    show (FStr x)   = (show x)
+    show (FList xs) = (show xs)
+    show (FNative x) = (show x)
