@@ -63,11 +63,3 @@ runCommand Mult (x:y:xs)  = Right $ x * y : xs
 runCommand Swap (x:y:xs)  = Right $ y : x : xs
 runCommand _ _ = Left "empty stack"
 
--- runProgram :: Program -> Either String Stack -> Either String Stack
--- runProgram [] stack = stack
--- runProgram (x:xs) stack = runProgram xs (runCommand x stack)
---    where commandResult = runCommand x stack
-
---execute :: String -> Stack -> Either String Stack
---execute program stack = runProgram parsed stack
---  where parsed = parseProgram program
