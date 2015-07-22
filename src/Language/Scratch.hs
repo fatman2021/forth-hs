@@ -1,4 +1,6 @@
-module Language.Scratch where
+module Language.Scratch 
+  (
+  ) where
 
 import           Control.Monad.State
 import qualified Data.Map            as M
