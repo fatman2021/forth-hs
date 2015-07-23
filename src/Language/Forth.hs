@@ -49,5 +49,4 @@ execute stack@(x:xs) =
 -- λ> forth "1 2 + DUP DUP"
 -- [3, 3, 3]
 --
-
-forth input = execute . foldPush $ parseProgram input
+-- forth input = execute . foldPush $ parseProgram input
